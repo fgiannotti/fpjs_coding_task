@@ -13,8 +13,8 @@ Profits obtained for given times where:
 ````go
     bestProfitExpected50ms := 4139.43
     bestProfitExpected60ms := 4675.71
-    bestProfitExpected90ms := 6972.29`
-    bestProfitExpected1000ms := 35471.812`
+    bestProfitExpected90ms := 6972.29
+    bestProfitExpected1000ms := 35471.812
 ````
 (I uploaded the tests I ran to get those numbers in `transaction_test.go`)
 

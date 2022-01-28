@@ -13,6 +13,11 @@ type Transaction struct {
 	BankCountryCode string
 }
 
+type simpleTransaction struct {
+	Amount    float32
+	LatencyMs int
+}
+
 type Transactions interface {
 	prioritize(transactions []Transaction, totalTimeMs int) []Transaction
 }
@@ -21,9 +26,9 @@ type TransactionsService struct {
 }
 
 func (ts *TransactionsService) bestProfit(transactions []Transaction, totalTimeMs int) float32 {
-	bestTransactions := ts.prioritize(transactions,totalTimeMs)
+	bestTransactions := ts.prioritize(transactions, totalTimeMs)
 	result := float32(0)
-	for _,transaction := range bestTransactions {
+	for _, transaction := range bestTransactions {
 		result += transaction.Amount
 	}
 
@@ -31,8 +36,8 @@ func (ts *TransactionsService) bestProfit(transactions []Transaction, totalTimeM
 }
 
 func (ts *TransactionsService) prioritize(transactions []Transaction, totalTimeMs int) []Transaction {
-	amounts, times := ts.mapToAmountsAndTimes(transactions)
-	resultIds := maxProfit(amounts, times, totalTimeMs)
+	simpleTransactions := ts.simplify(transactions)
+	resultIds := maxProfit(simpleTransactions, totalTimeMs)
 
 	result := make([]Transaction, len(resultIds))
 	for i := 0; i < len(resultIds); i++ {
@@ -42,57 +47,60 @@ func (ts *TransactionsService) prioritize(transactions []Transaction, totalTimeM
 	return result
 }
 
-func maxProfit(amounts []float32, times []int, totalTimeMs int) []int {
-	matrix := buildProfitMatrix(amounts, times, totalTimeMs)
-	i, t := len(amounts)-1, totalTimeMs
+func maxProfit(transactions []simpleTransaction, totalTimeMs int) []int {
+	matrix := buildProfitMatrix(transactions, totalTimeMs)
+	i, t := len(transactions)-1, totalTimeMs
 	maxProfit := matrix[i+1][t]
 	result := []int{}
 	profit := maxProfit
-	for profit > 0 || i < 0 {
+	for profit > 0 || i > 0 {
 		//if profit changes that transaction was a must
 		if matrix[i][t] != matrix[i+1][t] {
-			profit -= int(amounts[i])
-			t -= times[i]
-			result = append(result,i)
+			profit -= int(transactions[i].Amount)
+			t -= transactions[i].LatencyMs
+			result = append(result, i)
 		}
 		i--
 	}
 	return result
 }
 
-func buildProfitMatrix(amounts []float32, times []int, totalTimeMs int) [][]int {
+func buildProfitMatrix(transactions []simpleTransaction, totalTimeMs int) [][]int {
 	// create the empty matrix
-	memo := make([][]int, len(amounts)+1)
+	memo := make([][]int, len(transactions)+1)
 	for i := range memo {
 		memo[i] = make([]int, totalTimeMs+1)
 	}
 
-	for i := 1; i <= len(amounts); i++ {
-		for t := 1; t <= totalTimeMs; t++ {
-			if times[i-1] <= t {
-				val1 := float64(memo[i-1][t])
-				val2 := float64(amounts[i-1])
-				if (t - times[i-1]) >= 0 {
-					val2 += float64(memo[i-1][t-times[i-1]])
+	for i := 1; i <= len(transactions); i++ {
+		for time := 1; time <= totalTimeMs; time++ {
+			if transactions[i-1].LatencyMs <= time {
+				val1 := float64(memo[i-1][time])
+				val2 := float64(transactions[i-1].Amount)
+				if (time - transactions[i-1].LatencyMs) >= 0 {
+					val2 += float64(memo[i-1][time-transactions[i-1].LatencyMs])
 				}
-				memo[i][t] = int(math.Max(val1, val2))
+				memo[i][time] = int(math.Max(val1, val2))
 
 			} else {
-				memo[i][t] = memo[i-1][t]
+				memo[i][time] = memo[i-1][time]
 			}
 		}
 	}
 	return memo
 }
-func (ts *TransactionsService) mapToAmountsAndTimes(transactions []Transaction) ([]float32, []int) {
-	amounts := make([]float32, len(transactions)+1)
-	times := make([]int, len(transactions)+1)
-	amounts[0], times[0] = 0, 0
+func (ts *TransactionsService) simplify(transactions []Transaction) []simpleTransaction {
+	result := make([]simpleTransaction, len(transactions)+1)
+
+	result[0] = simpleTransaction{Amount: 0, LatencyMs: 0}
+
 	for i := 1; i <= len(transactions); i++ {
-		amounts[i] = transactions[i-1].Amount
-		times[i] = ts.latencyService.GetTransactionLatency(transactions[i-1])
+		result[i] = simpleTransaction{
+			Amount:    transactions[i-1].Amount,
+			LatencyMs: ts.latencyService.GetTransactionLatency(transactions[i-1]),
+		}
 	}
-	return amounts, times
+	return result
 }
 
 //caso 100 USD 1 seg 0 , 10 veces 20 USD en 0,01. Gana la segunda a pesar de que es mas chico

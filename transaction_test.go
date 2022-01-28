@@ -23,15 +23,15 @@ func TestTransactionsService_mapToAmountsAndTimes(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   []float32
-		want1  []int
+		want   []simpleTransaction
 	}{
 		{
 			"Test 2 transaction and take the best",
 			fields{ls},
 			args{[]Transaction{mockTransactionAR200, mockTransactionAR300}, 100},
-			[]float32{0, mockTransactionAR200.Amount, mockTransactionAR300.Amount},
-			[]int{0, ls.GetTransactionLatency(mockTransactionAR200), ls.GetTransactionLatency(mockTransactionAR300)},
+			[]simpleTransaction{
+				{mockTransactionAR200.Amount,ls.GetTransactionLatency(mockTransactionAR200)},
+				{mockTransactionAR300.Amount, ls.GetTransactionLatency(mockTransactionAR300)}},
 		},
 	}
 	for _, tt := range tests {
@@ -39,12 +39,9 @@ func TestTransactionsService_mapToAmountsAndTimes(t *testing.T) {
 			ts := &TransactionsService{
 				latencyService: tt.fields.latencyService,
 			}
-			got, got1 := ts.mapToAmountsAndTimes(tt.args.transactions)
+			got := ts.simplify(tt.args.transactions)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("mapToAmountsAndTimes() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("mapToAmountsAndTimes() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

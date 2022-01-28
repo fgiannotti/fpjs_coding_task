@@ -1,6 +1,6 @@
 # fpjs_coding_task
 
-###FingerprintJS task
+##FingerprintJS task
 
 This problem is similar to knapsack problem. I tried to map the transaction to a simple transaction to have only the
 time (weight in a standard KP)

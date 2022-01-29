@@ -30,6 +30,7 @@ func TestTransactionsService_mapToAmountsAndTimes(t *testing.T) {
 			fields{ls},
 			args{[]Transaction{mockTransactionAR200, mockTransactionAR300}, 100},
 			[]simpleTransaction{
+				{0,0},
 				{mockTransactionAR200.Amount,ls.GetTransactionLatency(mockTransactionAR200)},
 				{mockTransactionAR300.Amount, ls.GetTransactionLatency(mockTransactionAR300)}},
 		},
@@ -131,7 +132,7 @@ func TestTransactionsService_bestProfit(t *testing.T) {
 			bestProfitExpected60ms,
 		},
 		{
-			"Test 2 transaction and take both",
+			"Test max profit in transactions with 90",
 			fields{NewLatencyService()},
 			args{parsedTransactions, 90},
 			bestProfitExpected90ms,

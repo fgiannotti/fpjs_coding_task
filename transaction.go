@@ -37,7 +37,7 @@ func (ts *TransactionsService) bestProfit(transactions []Transaction, totalTimeM
 
 func (ts *TransactionsService) prioritize(transactions []Transaction, totalTimeMs int) []Transaction {
 	simpleTransactions := ts.simplify(transactions)
-	resultIds := maxProfit(simpleTransactions, totalTimeMs)
+	resultIds := ts.maxProfit(simpleTransactions, totalTimeMs)
 
 	result := make([]Transaction, len(resultIds))
 	for i := 0; i < len(resultIds); i++ {
@@ -47,7 +47,7 @@ func (ts *TransactionsService) prioritize(transactions []Transaction, totalTimeM
 	return result
 }
 
-func maxProfit(transactions []simpleTransaction, totalTimeMs int) []int {
+func (ts *TransactionsService) maxProfit(transactions []simpleTransaction, totalTimeMs int) []int {
 	matrix := buildProfitMatrix(transactions, totalTimeMs)
 	i, t := len(transactions)-1, totalTimeMs
 	maxProfit := matrix[i+1][t]
@@ -91,7 +91,7 @@ func buildProfitMatrix(transactions []simpleTransaction, totalTimeMs int) [][]in
 }
 func (ts *TransactionsService) simplify(transactions []Transaction) []simpleTransaction {
 	result := make([]simpleTransaction, len(transactions)+1)
-
+	//start with 0 to avoid null checks in the matrix
 	result[0] = simpleTransaction{Amount: 0, LatencyMs: 0}
 
 	for i := 1; i <= len(transactions); i++ {
@@ -102,5 +102,3 @@ func (ts *TransactionsService) simplify(transactions []Transaction) []simpleTran
 	}
 	return result
 }
-
-//caso 100 USD 1 seg 0 , 10 veces 20 USD en 0,01. Gana la segunda a pesar de que es mas chico

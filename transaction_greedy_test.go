@@ -10,10 +10,10 @@ func TestTransactionsGreedyService_bestProfit(t *testing.T) {
 	csv ,err := os.ReadFile("test_transactions.csv")
 	if err != nil { panic(err) }
 	parsedTransactions := parseTransactions(csv)
-	bestProfitExpected1000ms := 1849.150146484375
+	bestProfitExpected1000ms := 1849.150009393692
 	bestProfitExpected50ms := 33.29999923706055
 	bestProfitExpected60ms := 43.58000183105469
-	bestProfitExpected90ms := 47.019996643066406
+	bestProfitExpected90ms := 47.019999265670776
 
 	type fields struct {
 		latencyService LatencyService

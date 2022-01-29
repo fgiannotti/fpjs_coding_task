@@ -36,16 +36,16 @@ func (ts *TransactionsGreedyService) maxProfit(transactions []simpleTransaction,
 	profitFromAmountOrder := getGreedyProfit(transactionsByAmount, totalTimeMs)
 	profitFromLatencyOrder := getGreedyProfit(transactionsByTime, totalTimeMs)
 
-	return math.Max(float64(profitFromAmountOrder),float64(profitFromLatencyOrder))
+	return math.Max(profitFromAmountOrder,profitFromLatencyOrder)
 }
 
-func getGreedyProfit(transactions []simpleTransaction, totalTimeMs int) float32 {
+func getGreedyProfit(transactions []simpleTransaction, totalTimeMs int) float64 {
 	time := totalTimeMs
 	i := 0
-	profit := float32(0)
+	profit := float64(0)
 	for time > 0 && i < len(transactions) {
 		if transactions[i].LatencyMs <= time {
-			profit += transactions[i].Amount
+			profit += float64(transactions[i].Amount)
 			time -= transactions[i].LatencyMs
 		}
 		i++
